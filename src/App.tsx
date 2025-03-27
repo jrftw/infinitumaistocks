@@ -1,25 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+// MARK: App.tsx - Routing Setup
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SignupPage from "./pages/SignupPage";
+import LoginPage from "./pages/LoginPage";
+import PortfolioUploadPage from "./pages/PortfolioUploadPage";
+import ManualEntryForm from "./pages/ManualEntryForm";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/upload" element={<PortfolioUploadPage />} />
+        <Route path="/manual" element={<ManualEntryForm />} />
+        <Route path="/dashboard" element={<ManualEntryForm />} /> {/* 👈 This is your "dashboard" */}
+      </Routes>
+    </Router>
   );
 }
 
