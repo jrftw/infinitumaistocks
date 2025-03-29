@@ -11,6 +11,9 @@ import {
   Recommendation,
 } from "../utils/strategyEngine";
 import StockChart from "../components/StockChart";
+import { useNavigate, Link } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 type PortfolioItem = FirestorePortfolioItem & {
   currentPrice?: number;
@@ -24,6 +27,12 @@ export default function ManualEntryForm() {
   const [quantity, setQuantity] = useState<number>(0);
   const [costBasis, setCostBasis] = useState<number>(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/");
+  };
 
   useEffect(() => {
     loadPortfolio().then(async (data) => {
@@ -31,7 +40,8 @@ export default function ManualEntryForm() {
         data.map(async (item) => {
           const currentPrice = await getLivePrice(item.symbol);
           const value = currentPrice * item.quantity;
-          const gainLoss = ((currentPrice - item.costBasis) / item.costBasis) * 100;
+          const gainLoss =
+            ((currentPrice - item.costBasis) / item.costBasis) * 100;
           return { ...item, currentPrice, value, gainLoss };
         })
       );
@@ -86,16 +96,31 @@ export default function ManualEntryForm() {
     updated[index].currentPrice = currentPrice;
     updated[index].value = currentPrice * updated[index].quantity;
     updated[index].gainLoss =
-      ((currentPrice - updated[index].costBasis) / updated[index].costBasis) * 100;
+      ((currentPrice - updated[index].costBasis) / updated[index].costBasis) *
+      100;
 
     setPortfolio(updated);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 p-6">
-      <h1 className="text-3xl font-bold text-center mb-6 text-blue-800">
-        Manual Portfolio Entry
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-blue-800">InfinitumAiStocks</h1>
+        <div className="flex gap-4">
+          <Link
+            to="/upload"
+            className="bg-blue-100 text-blue-800 px-4 py-2 rounded hover:bg-blue-200 transition"
+          >
+            CSV Upload
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          >
+            Log Out
+          </button>
+        </div>
+      </div>
 
       <div className="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -120,7 +145,9 @@ export default function ManualEntryForm() {
             />
           </div>
           <div>
-            <label className="block text-sm mb-1 text-gray-700">Avg Cost Per Share</label>
+            <label className="block text-sm mb-1 text-gray-700">
+              Avg Cost Per Share
+            </label>
             <input
               type="number"
               placeholder="e.g. 145"
@@ -145,8 +172,8 @@ export default function ManualEntryForm() {
                 <tr>
                   <th className="p-3">Symbol</th>
                   <th className="p-3">Quantity</th>
-                  <th className="p-3">Avg Cost Per Share</th>
-                  <th className="p-3">Live Price (Real-Time)</th>
+                  <th className="p-3">Avg Cost</th>
+                  <th className="p-3">Live Price</th>
                   <th className="p-3">Market Value</th>
                   <th className="p-3">Gain/Loss</th>
                   <th className="p-3">Actions</th>
@@ -176,8 +203,12 @@ export default function ManualEntryForm() {
                         className="w-20 border rounded px-2"
                       />
                     </td>
-                    <td className="p-3">${item.currentPrice?.toFixed(2) || "–"}</td>
-                    <td className="p-3">${item.value?.toFixed(2) || "–"}</td>
+                    <td className="p-3">
+                      ${item.currentPrice?.toFixed(2) || "–"}
+                    </td>
+                    <td className="p-3">
+                      ${item.value?.toFixed(2) || "–"}
+                    </td>
                     <td className="p-3">
                       {item.gainLoss !== undefined ? (
                         <span
