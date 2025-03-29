@@ -1,7 +1,8 @@
 // MARK: Signup Page - SignupPage.tsx
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function SignupPage() {
@@ -11,10 +12,28 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // ✅ Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const user = userCredential.user;
+
+      // ✅ Save user profile to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        uid: user.uid,
+        createdAt: new Date().toISOString(),
+      });
+
+      // ✅ Navigate to dashboard
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("❌ Signup error:", error);
       alert(error.message);
     }
   };
@@ -25,6 +44,7 @@ export default function SignupPage() {
 
       <form onSubmit={handleSignup} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Sign Up</h2>
+
         <input
           type="email"
           placeholder="Email"
@@ -33,6 +53,7 @@ export default function SignupPage() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -41,7 +62,11 @@ export default function SignupPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+        >
           Create Account
         </button>
 
